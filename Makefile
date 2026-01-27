@@ -13,7 +13,7 @@ export
 
 APP=app
 COMPOSE_EXTRA=$(shell if [ -f docker-compose.extra.yml ]; then echo "-f docker-compose.extra.yml"; fi)
-COMPOSE=docker compose -f docker-compose.yml $(COMPOSE_EXTRA)
+COMPOSE=docker compose -f compose.yml $(COMPOSE_EXTRA)
 COMPOSE_UP=$(COMPOSE) up -d --wait
 
 default: up
@@ -34,6 +34,13 @@ up: deps
 	@echo "Starting server..."
 	@$(COMPOSE_UP)
 	@echo "Server started on port ${MC_PORT}"
+
+	@$(MAKE) fix_bluemap
+
+fix_bluemap:
+	@rm -rf $(SERVER_DIR)/config/bluemap
+	@cp -r $(BACKUPS_DIR)/bluemap $(SERVER_DIR)/config/bluemap
+	@$(COMPOSE) exec $(APP) rcon-cli /bluemap reload
 
 down:
 	@echo "Stopping server..."
